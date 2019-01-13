@@ -21,11 +21,9 @@ initState = AppState
         currentF = 0
     }
 
-
 isMember = Map.member
 
 addElem v = Map.insert v v
-    
 
 getInput :: IO String
 getInput = readFile "ex1-input.txt"
@@ -52,46 +50,18 @@ compute (v:vs) state = do
                 compute vs state
 
 myprint :: (AppState, Integer) -> IO()
-myprint = print
+myprint (as,iter)= print $ "First frequency that appeared twice: " ++ show (frequencyRT as) ++ " found after " ++ show iter ++ " iterations."
 
-{-
-main2 :: IO ()
-main2 = do 
-    input <- getInput
-    myprint $ runST $ do
-    appSt <- newSTRef initState
-    compute (toInts input) appSt
--}
-
-
-searchF ints st iter = 
-    let result = runST $ do
+searchF fs st iter = 
+    let appStResult = runST $ do
         appSt <- newSTRef st
-        compute ints appSt in
-    if Data.Maybe.isJust $ frequencyRT result
-    then (result, iter)
-    else searchF ints result (iter+1)
+        compute fs appSt in
+    if Data.Maybe.isJust $ frequencyRT appStResult
+    then (appStResult, iter)
+    else searchF fs appStResult (iter+1)
 
 main :: IO ()
 main = do 
     input <- getInput
-    let inputInts = toInts input
-    myprint $ searchF inputInts initState 1
-
-
-fibST :: Integer -> Integer
-fibST n = 
-    if n < 2
-    then n
-    else runST $ do
-        x <- newSTRef 0
-        y <- newSTRef 1
-        fibST' n x y
-    
-        where fibST' 0 x _ = readSTRef x
-              fibST' n x y = do
-                    x' <- readSTRef x
-                    y' <- readSTRef y
-                    writeSTRef x y'
-                    writeSTRef y $ x'+y'
-                    fibST' (n-1) x y
+    let fs = toInts input
+    myprint $ searchF fs initState 1
